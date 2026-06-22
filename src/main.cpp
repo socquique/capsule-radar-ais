@@ -658,6 +658,9 @@ void loop() {
         const bool feedFresh = g_ais.connected() && g_ais.lastMsgMs() != 0 &&
                                (millis() - g_ais.lastMsgMs() < 30000UL);
         ui_set_status(wifiUp, feedFresh, rssi, clk);
+        Serial.printf("[ais] feed %s | %u tracked | %d shown | %d in range\n",
+                      g_ais.connected() ? "up" : "down", (unsigned)g_ais.trackedCount(),
+                      (int)g_snap.size(), radar::countInRange());
         char net[80];
         if (wifiUp) snprintf(net, sizeof(net), "Configure at\ncapsule-marine.local\n%s", WiFi.localIP().toString().c_str());
         else        snprintf(net, sizeof(net), "WiFi setup:\njoin CapsuleMarine-Setup");

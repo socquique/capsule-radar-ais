@@ -123,7 +123,10 @@ void AisClient::onEvent(int type, uint8_t* payload, size_t length) {
 void AisClient::ingest(const char* json, size_t len) {
     JsonDocument doc(&s_jsonPsram);
     DeserializationError err = deserializeJson(doc, json, len);
-    if (err) return;
+    if (err) {
+        static int e = 0; if (e++ < 5) Serial.printf("[ais] json parse error: %s\n", err.c_str());  // rate-limited
+        return;
+    }
 
     // aisstream sends an error object (no MessageType) if the subscription/key is bad.
     const char* mtype = doc["MessageType"] | (const char*)nullptr;
