@@ -24,7 +24,6 @@ A polished desk gadget that turns the **Waveshare ESP32-S3-Touch-AMOLED-1.75** (
 - **Adjustable tilt stand** to angle the scope just right.
 - **Magnetic snap-on back** — fast, tool-light assembly.
 - **Built-in speaker** for zone / proximity alert pings (e.g. a vessel entering the harbour).
-- Optional **GPS** auto-locates you (-G board variant).
 
 #### 🖨️ Printing — no AMS / no multi-material needed
 Each part prints in a **single colour**, so any printer works (I used a black case + orange stand).
@@ -32,10 +31,9 @@ Each part prints in a **single colour**, so any printer works (I used a black ca
 - Material: **PLA or PETG** · Layer height: **0.2 mm** · Walls: **3** · Infill: **15%**
 - Supports: **minimal — only on the bezel ring that holds the screen**.
 - Total print time: **~2 hours**.
-- ⚠️ **Board size:** the **bare PCB is ≈48.96 mm**; **with the Waveshare shell it's ≈51 mm**. This case fits the **bare PCB — remove the board from its shell** first.
 
 #### 🧰 What you need
-- **Waveshare ESP32-S3-Touch-AMOLED-1.75** board.
+- **Waveshare ESP32-S3-Touch-AMOLED-1.75** board — buy it **without the plastic case** (this enclosure replaces it).
 - **USB-C data cable** (power + flashing); optional 3.7 V LiPo (MX1.25) for cordless use.
 - **6× ⌀6 × 2 mm neodymium disc magnets** (press-fit — 3 in the case, 3 in the back cover).
 - **3× M2 × 6 mm screws** to fasten the screen/board to the bezel ring.
@@ -45,7 +43,7 @@ Each part prints in a **single colour**, so any printer works (I used a black ca
 
 #### 🔩 Assembly (easy — no tools)
 1. Press-fit the **6 magnets** into the case and back cover.
-2. Take the board out of the Waveshare shell and **screw the screen to the bezel ring with the 3× M2×6 screws**.
+2. **Screw the screen to the bezel ring with the 3× M2×6 screws.**
 3. Plug the speaker into the **SPK** connector and tuck it into the back.
 4. Snap the **magnetic back** on.
 5. Clip the case into the **tilt stand** with the **printed pins**; angle to taste.
@@ -84,7 +82,6 @@ Un gadget de sobremesa que convierte la placa **Waveshare ESP32-S3-Touch-AMOLED-
 - **Soporte basculante** para inclinar la pantalla a tu gusto.
 - **Trasera magnética** — montaje rápido y casi sin herramientas.
 - **Altavoz integrado** para avisos de zona / proximidad (p. ej. un barco entrando al puerto).
-- **GPS** opcional que te autolocaliza (variante -G de la placa).
 
 #### 🖨️ Impresión — sin AMS / sin multimaterial
 Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo usé carcasa negra + soporte naranja).
@@ -92,10 +89,9 @@ Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo
 - Material: **PLA o PETG** · Altura de capa: **0,2 mm** · Perímetros: **3** · Relleno: **15%**
 - Soportes: **mínimos — solo en el aro que sujeta la pantalla**.
 - Tiempo total de impresión: **~2 horas**.
-- ⚠️ **Tamaño de placa:** la **PCB desnuda mide ≈48,96 mm**; **con la carcasa Waveshare son ≈51 mm**. Esta carcasa encaja con la **PCB desnuda — saca la placa de su carcasa** primero.
 
 #### 🧰 Qué necesitas
-- Placa **Waveshare ESP32-S3-Touch-AMOLED-1.75**.
+- Placa **Waveshare ESP32-S3-Touch-AMOLED-1.75** — cómprala **sin la carcasa de plástico** (esta caja la sustituye).
 - **Cable USB-C de datos** (alimentación + flasheo); LiPo 3,7 V (MX1.25) opcional para usarlo sin cable.
 - **6 imanes de neodimio ⌀6 × 2 mm** (a presión — 3 en la carcasa, 3 en la tapa).
 - **3 tornillos M2 × 6 mm** para fijar la pantalla/placa al aro del bisel.
@@ -105,7 +101,7 @@ Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo
 
 #### 🔩 Montaje (fácil — sin herramientas)
 1. Mete a presión los **6 imanes** en la carcasa y la tapa.
-2. Saca la placa de la carcasa Waveshare y **atornilla la pantalla al aro del bisel con los 3 tornillos M2×6**.
+2. **Atornilla la pantalla al aro del bisel con los 3 tornillos M2×6.**
 3. Conecta el altavoz al conector **SPK** y acomódalo en la trasera.
 4. Encaja la **tapa magnética**.
 5. Monta la carcasa en el **soporte basculante** con los **pasadores impresos**; inclínala a gusto.
