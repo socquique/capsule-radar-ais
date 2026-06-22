@@ -1,0 +1,60 @@
+name: Release firmware
+
+# Push a tag like v1.0.0 to build the merged firmware and attach it to a GitHub
+# Release (a single .bin makers can flash with esptool or the web flasher):
+#   git tag v1.0.0 && git push origin v1.0.0
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO + esptool
+        run: pip install platformio esptool
+
+      - name: Build firmware
+        run: pio run -e esp32-s3-amoled-175
+
+      - name: Merge into a single flashable binary
+        run: |
+          B=.pio/build/esp32-s3-amoled-175
+          BOOT_APP0="$(find "$HOME/.platformio/packages" -name boot_app0.bin -path '*framework-arduinoespressif32*' | head -1)"
+          python -m esptool --chip esp32s3 merge_bin -o CapsuleRadarMarine-esp32s3.bin \
+            --flash_mode dio --flash_freq 80m --flash_size 16MB \
+            0x0     "$B/bootloader.bin" \
+            0x8000  "$B/partitions.bin" \
+            0xe000  "$BOOT_APP0" \
+            0x10000 "$B/firmware.bin"
+          cp "$B/firmware.bin" CapsuleRadarMarine-ota.bin   # app-only image for the device's web OTA page
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            CapsuleRadarMarine-esp32s3.bin
+            CapsuleRadarMarine-ota.bin
+          generate_release_notes: true
+          body: |
+            **First flash (USB):** `CapsuleRadarMarine-esp32s3.bin` — the full merged image (offset `0x0`).
+            - Browser, no toolchain: https://socquique.github.io/capsule-radar-ais/
+            - Or: `esptool.py --chip esp32s3 write_flash 0x0 CapsuleRadarMarine-esp32s3.bin`
+
+            **Update over WiFi (no cable):** `CapsuleRadarMarine-ota.bin` — the app-only image.
+            Open `http://capsule-marine.local/update` on the device and upload this file.
+            (Do **not** upload the merged image there.)
+
+            After flashing, enter your free **aisstream.io** API key + WiFi in the
+            `CapsuleMarine-Setup` captive portal.

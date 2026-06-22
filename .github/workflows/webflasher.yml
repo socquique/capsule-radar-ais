@@ -1,0 +1,74 @@
+name: Build firmware & deploy web flasher
+
+# Builds the ESP32-S3 firmware, merges it into a single binary, and publishes the
+# browser web-flasher (web/flash/) to GitHub Pages so makers can flash from Chrome/Edge.
+#
+# One-time setup in the repo: Settings -> Pages -> Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO + esptool
+        run: pip install platformio esptool
+
+      - name: Build firmware
+        run: pio run -e esp32-s3-amoled-175
+
+      - name: Merge into a single flashable binary
+        run: |
+          B=.pio/build/esp32-s3-amoled-175
+          BOOT_APP0="$(find "$HOME/.platformio/packages" -name boot_app0.bin -path '*framework-arduinoespressif32*' | head -1)"
+          mkdir -p site
+          cp web/flash/index.html web/flash/manifest.json site/
+          # stamp the flasher page + manifest with the firmware version being built
+          VER=$(grep -oE 'FW_VERSION "[0-9.]+"' src/config.h | grep -oE '[0-9.]+' | head -1)
+          sed -i "s/__FWVER__/${VER:-dev}/g" site/index.html site/manifest.json
+          python -m esptool --chip esp32s3 merge_bin -o site/CapsuleRadarMarine-esp32s3.bin \
+            --flash_mode dio --flash_freq 80m --flash_size 16MB \
+            0x0     "$B/bootloader.bin" \
+            0x8000  "$B/partitions.bin" \
+            0xe000  "$BOOT_APP0" \
+            0x10000 "$B/firmware.bin"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

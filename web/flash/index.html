@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capsule Radar Marine — Web Flasher</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  :root { --green:#1dff86; --soft:#9affc8; --ink:#eafff3; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; padding: 32px 18px;
+    background: radial-gradient(circle at 50% 30%, #0a1f15 0%, #04100a 70%, #020805 100%);
+    color: var(--ink); font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  h1 { color: var(--green); font-size: 26px; margin: 8px 0 2px; letter-spacing: .5px; }
+  .sub { color: var(--soft); font-size: 14px; margin-bottom: 28px; }
+  .card {
+    background: rgba(10,22,15,.85); border: 1px solid #1f3a2b; border-radius: 16px;
+    padding: 26px 22px; max-width: 460px; width: 100%; margin-bottom: 18px;
+  }
+  esp-web-install-button { --esp-tools-button-color: #04140b; --esp-tools-button-background-color: var(--green); }
+  ol { text-align: left; color: var(--soft); font-size: 14px; line-height: 1.6; padding-left: 20px; }
+  code { background:#0c1a12; padding:2px 6px; border-radius:6px; color:var(--ink); }
+  .note { color:#7fae97; font-size:12px; margin-top:18px; }
+  a { color: var(--green); }
+  .radar { width: 92px; height: 92px; border-radius: 50%; border: 2px solid var(--green);
+           position: relative; margin: 0 auto 14px; box-shadow: 0 0 22px rgba(29,255,134,.35); }
+  .radar::before { content:""; position:absolute; inset:0; border-radius:50%;
+    background: conic-gradient(from 0deg, rgba(29,255,134,.55), transparent 60%); animation: spin 3.2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ver { color:var(--soft); font-size:13px; margin-top:14px; }
+  .ver b { color: var(--green); }
+  .key { color:#ffd27a; font-size:13px; }
+</style>
+</head>
+<body>
+  <div class="radar"></div>
+  <h1>Capsule Radar — Marine</h1>
+  <div class="sub">Live AIS ship radar · Waveshare ESP32-S3-Touch-AMOLED-1.75</div>
+
+  <div class="card">
+    <p style="margin-top:0">Flash the firmware straight from your browser — no toolchain, no PlatformIO.</p>
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">⚡ Install Capsule Radar Marine</button>
+      <span slot="unsupported">Use Chrome or Edge on desktop (Web Serial required).</span>
+      <span slot="not-allowed">Serve this page over HTTPS to flash.</span>
+    </esp-web-install-button>
+    <div class="ver">Installs firmware <b>v__FWVER__</b></div>
+  </div>
+
+  <div class="card">
+    <ol>
+      <li>Get a free <b>aisstream.io API key</b> (non-commercial) at <a href="https://aisstream.io" target="_blank" rel="noopener">aisstream.io</a> — you'll paste it in step 4.</li>
+      <li>Plug the board into your computer with a <b>USB-C data cable</b>.</li>
+      <li>Click <b>Install</b>, pick the <code>USB JTAG/serial</code> (or <code>USB Serial</code>) port, then <b>Erase device + Install</b> on first flash.</li>
+      <li>When it reboots, join the <b>CapsuleMarine-Setup</b> WiFi from your phone to enter your network, <span class="key">aisstream API key</span>, and home location.</li>
+      <li>Fine-tune anything later at <code>http://capsule-marine.local/</code>.</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    Educational / non-commercial project · AIS data from <a href="https://aisstream.io" target="_blank" rel="noopener">aisstream.io</a><br>
+    Source &amp; build instructions: <a href="https://github.com/socquique/capsule-radar-ais">GitHub repository</a>
+  </div>
+</body>
+</html>

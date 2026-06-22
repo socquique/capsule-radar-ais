@@ -1,0 +1,19 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Build artifacts
+*.bin
+*.elf
+*.map
+build/
+dist/
+
+# Secrets (WiFi creds live in NVS on the device, never in the repo)
+secrets.h
