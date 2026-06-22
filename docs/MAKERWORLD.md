@@ -49,10 +49,14 @@ Each part prints in a **single colour**, so any printer works (I used a black ca
 5. Clip the case into the **tilt stand** with the **printed pins**; angle to taste.
 6. **Flash & set up** (next).
 
-#### ⚡ Flash it in ~60 seconds — no toolchain
-Browser web-flasher (Chrome/Edge), plug in, click Install:
-👉 **https://socquique.github.io/capsule-radar-ais/**
-Then join the **`CapsuleMarine-Setup`** WiFi to enter your network, aisstream key and home location. Fine-tune later at `http://capsule-marine.local/`.
+#### ⚡ Flash & set up — no toolchain
+1. **Get a free AIS API key** at **[aisstream.io](https://aisstream.io)** → sign up → **Create API Key** (free, non-commercial, no credit card).
+2. Open the **browser web-flasher** (Chrome/Edge), plug the board in, click **Install**:
+   👉 **https://socquique.github.io/capsule-radar-ais/**
+3. Join the **`CapsuleMarine-Setup`** WiFi from your phone and enter your WiFi, your **aisstream API key**, and your home location.
+4. Fine-tune anything later at `http://capsule-marine.local/`.
+
+> 🔑 **A free aisstream.io API key is required** — it's what feeds the live ship data into the radar. One minute to create, no card needed.
 
 #### 🔁 Same screen? Build my other gadgets too
 This runs on the **Waveshare ESP32-S3-Touch-AMOLED-1.75**. If you already have that screen, you can print + flash these too — one board, three desk toys:
@@ -115,10 +119,14 @@ Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo
 5. Monta la carcasa en el **soporte basculante** con los **pasadores impresos**; inclínala a gusto.
 6. **Flashea y configura** (abajo).
 
-#### ⚡ Flasheo en ~60 s — sin toolchain
-Flasher web (Chrome/Edge), enchufa, pulsa Install:
-👉 **https://socquique.github.io/capsule-radar-ais/**
-Luego únete al WiFi **`CapsuleMarine-Setup`** para meter tu red, la API key de aisstream y tu ubicación. Ajusta lo demás en `http://capsule-marine.local/`.
+#### ⚡ Flasheo y configuración — sin toolchain
+1. **Consigue una API key gratuita** en **[aisstream.io](https://aisstream.io)** → regístrate → **Create API Key** (gratis, no comercial, sin tarjeta).
+2. Abre el **flasher web** (Chrome/Edge), enchufa la placa y pulsa **Install**:
+   👉 **https://socquique.github.io/capsule-radar-ais/**
+3. Únete al WiFi **`CapsuleMarine-Setup`** desde el móvil e introduce tu WiFi, tu **API key de aisstream** y tu ubicación.
+4. Ajusta lo demás en `http://capsule-marine.local/`.
+
+> 🔑 **Necesitas una API key gratuita de aisstream.io** — es lo que alimenta los datos de barcos en vivo del radar. Se crea en un minuto, sin tarjeta.
 
 #### 🔁 ¿Misma pantalla? Monta también mis otros gadgets
 Funciona sobre la **Waveshare ESP32-S3-Touch-AMOLED-1.75**. Si ya tienes esa pantalla, puedes imprimir + flashear estos también — una placa, tres juguetes de escritorio:
