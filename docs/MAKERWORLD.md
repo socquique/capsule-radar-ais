@@ -10,7 +10,7 @@ screenshot of the plate.
 
 **Title:** Capsule Radar — Marine · Live AIS Ship Radar (ESP32-S3 Round AMOLED)
 
-**Summary:** A glowing round desk radar on a tilt stand that plots real ships around you from a live AIS feed — magnetic snap-on back, built-in alert speaker, flashed from your browser in a minute. No AMS, no screws.
+**Summary:** A glowing round desk radar on a tilt stand that plots real ships around you from a live AIS feed — magnetic snap-on back, built-in alert speaker, flashed from your browser in a minute. No AMS; assembles with 6 magnets + 3 tiny screws.
 
 ### 🚢 Capsule Radar — Marine
 
@@ -38,13 +38,14 @@ Each part prints in a **single colour**, so any printer works (I used a black ca
 - **Waveshare ESP32-S3-Touch-AMOLED-1.75** board.
 - **USB-C data cable** (power + flashing); optional 3.7 V LiPo (MX1.25) for cordless use.
 - **6× ⌀6 × 2 mm neodymium disc magnets** (press-fit — 3 in the case, 3 in the back cover).
+- **3× M2 × 6 mm screws** to fasten the screen/board to the bezel ring.
 - The Waveshare **speaker** (MX1.25) for alert sounds (optional).
-- **No screws** — the tilt pivot uses **printed pins**.
+- The tilt pivot uses **printed pins** — no hardware there.
 - A **free [aisstream.io](https://aisstream.io) API key** (non-commercial) for the live feed.
 
 #### 🔩 Assembly (easy — no tools)
 1. Press-fit the **6 magnets** into the case and back cover.
-2. Take the board out of the Waveshare shell and seat it in the case.
+2. Take the board out of the Waveshare shell and **screw the screen to the bezel ring with the 3× M2×6 screws**.
 3. Plug the speaker into the **SPK** connector and tuck it into the back.
 4. Snap the **magnetic back** on.
 5. Clip the case into the **tilt stand** with the **printed pins**; angle to taste.
@@ -69,7 +70,7 @@ Educational / **non-commercial** project. AIS data via **aisstream.io** (free ti
 
 **Título:** Capsule Radar — Marine · Radar de barcos AIS en vivo (ESP32-S3 AMOLED redonda)
 
-**Resumen:** Un radar redondo de sobremesa sobre soporte basculante que dibuja los barcos reales a tu alrededor desde un feed AIS en vivo — trasera magnética, altavoz de avisos integrado, y se flashea desde el navegador en un minuto. Sin AMS, sin tornillos.
+**Resumen:** Un radar redondo de sobremesa sobre soporte basculante que dibuja los barcos reales a tu alrededor desde un feed AIS en vivo — trasera magnética, altavoz de avisos integrado, y se flashea desde el navegador en un minuto. Sin AMS; se monta con 6 imanes + 3 tornillos pequeños.
 
 ### 🚢 Capsule Radar — Marine
 
@@ -97,13 +98,14 @@ Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo
 - Placa **Waveshare ESP32-S3-Touch-AMOLED-1.75**.
 - **Cable USB-C de datos** (alimentación + flasheo); LiPo 3,7 V (MX1.25) opcional para usarlo sin cable.
 - **6 imanes de neodimio ⌀6 × 2 mm** (a presión — 3 en la carcasa, 3 en la tapa).
+- **3 tornillos M2 × 6 mm** para fijar la pantalla/placa al aro del bisel.
 - El **altavoz** Waveshare (MX1.25) para los avisos (opcional).
-- **Sin tornillos** — el pivote del soporte usa **pasadores impresos**.
+- El pivote del soporte usa **pasadores impresos** — ahí no hay tornillería.
 - Una **API key gratuita de [aisstream.io](https://aisstream.io)** (no comercial) para el feed.
 
 #### 🔩 Montaje (fácil — sin herramientas)
 1. Mete a presión los **6 imanes** en la carcasa y la tapa.
-2. Saca la placa de la carcasa Waveshare y colócala en el alojamiento.
+2. Saca la placa de la carcasa Waveshare y **atornilla la pantalla al aro del bisel con los 3 tornillos M2×6**.
 3. Conecta el altavoz al conector **SPK** y acomódalo en la trasera.
 4. Encaja la **tapa magnética**.
 5. Monta la carcasa en el **soporte basculante** con los **pasadores impresos**; inclínala a gusto.
