@@ -54,6 +54,14 @@ Browser web-flasher (Chrome/Edge), plug in, click Install:
 👉 **https://socquique.github.io/capsule-radar-ais/**
 Then join the **`CapsuleMarine-Setup`** WiFi to enter your network, aisstream key and home location. Fine-tune later at `http://capsule-marine.local/`.
 
+#### 🔁 Same screen? Build my other gadgets too
+This runs on the **Waveshare ESP32-S3-Touch-AMOLED-1.75**. If you already have that screen, you can print + flash these too — one board, three desk toys:
+
+| Project | What it is | Link |
+|---|---|---|
+| **Capsule Radar** | Live ADS-B **aircraft** radar (the original) | https://makerworld.com/en/models/2907695-capsule-radar-live-flight-radar-desk-gadget |
+| **TamaPoke** | A Poké Ball **Tamagotchi** virtual pet | https://makerworld.com/en/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi |
+
 #### 🛠️ Open source
 MIT-licensed firmware: **https://github.com/socquique/capsule-radar-ais** — PRs, themes & remixes welcome. Built with PlatformIO + LVGL + arduinoWebSockets.
 
@@ -111,6 +119,14 @@ Cada pieza se imprime a **un solo color**, así que vale cualquier impresora (yo
 Flasher web (Chrome/Edge), enchufa, pulsa Install:
 👉 **https://socquique.github.io/capsule-radar-ais/**
 Luego únete al WiFi **`CapsuleMarine-Setup`** para meter tu red, la API key de aisstream y tu ubicación. Ajusta lo demás en `http://capsule-marine.local/`.
+
+#### 🔁 ¿Misma pantalla? Monta también mis otros gadgets
+Funciona sobre la **Waveshare ESP32-S3-Touch-AMOLED-1.75**. Si ya tienes esa pantalla, puedes imprimir + flashear estos también — una placa, tres juguetes de escritorio:
+
+| Proyecto | Qué es | Enlace |
+|---|---|---|
+| **Capsule Radar** | Radar de **aviones** ADS-B en vivo (el original) | https://makerworld.com/es/models/2907695-capsule-radar-live-flight-radar-desk-gadget |
+| **TamaPoke** | Un **Tamagotchi** Pokéball (mascota virtual) | https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi |
 
 #### 🛠️ Open source
 Firmware con licencia MIT: **https://github.com/socquique/capsule-radar-ais** — PRs, temas y remixes bienvenidos. Hecho con PlatformIO + LVGL + arduinoWebSockets.
