@@ -47,11 +47,17 @@
 #define ORB_FLOW   lv_color_hex(0xFFC24D)
 
 // ---- sweep config ----
+// Thin rotating beam with a short fading trail — the proven, fast sweep from the
+// aircraft project (a filled fan repaints too much coastline/rings on this QSPI panel).
 #define SWEEP_PERIOD_MS   8000
 #define SWEEP_FRAME_MS    30
 #define SWEEP_TRAIL_DEG   38.0f
 #define SWEEP_TRAIL_STEPS 20
 #define SWEEP_TRAIL_OPA   72
+
+// vessel glyph colours (photo look): calm blue contacts, bright green for the selected one
+#define VESSEL_BLUE  lv_color_hex(0x4AA8FF)
+#define VESSEL_SEL   lv_color_hex(0x39FF14)
 
 // ---- vessel / flow / orb config ----
 #define TRAIL_MAX         7
@@ -82,6 +88,7 @@ static lv_obj_t  *s_pulse     = nullptr;
 static lv_obj_t  *s_rangeLbl  = nullptr;
 static bool       s_rangeLblVisible = true;
 static bool       s_sweepEnabled    = true;
+static bool       s_compass         = true;   // N/S/E/W rose letters visible?
 static int        s_trailMax        = TRAIL_MAX;   // per-vessel trail length (0 = off)
 static int        s_flowMax         = FLOW_MAX;    // persistent flow-layer segments, count cap (0 = off)
 static int        s_flowGenMax      = 14;          // ...and an age cap in updates so tracks fade out
@@ -452,32 +459,33 @@ static void draw_offrange(lv_draw_ctx_t *d, const ShipDraw &sh) {
 }
 
 // A quiet diamond for anchored/moored (stationary) vessels — no heading to show.
-static void draw_dot(lv_draw_ctx_t *d, const ShipDraw &sh) {
-    lv_point_t dia[4] = { { sh.pos.x, (lv_coord_t)(sh.pos.y - 6) },
-                          { (lv_coord_t)(sh.pos.x + 6), sh.pos.y },
-                          { sh.pos.x, (lv_coord_t)(sh.pos.y + 6) },
-                          { (lv_coord_t)(sh.pos.x - 6), sh.pos.y } };
+static void draw_dot(lv_draw_ctx_t *d, const ShipDraw &sh, lv_color_t col, float scale) {
+    const lv_coord_t r = (lv_coord_t)lroundf(6.0f * scale);
+    lv_point_t dia[4] = { { sh.pos.x, (lv_coord_t)(sh.pos.y - r) },
+                          { (lv_coord_t)(sh.pos.x + r), sh.pos.y },
+                          { sh.pos.x, (lv_coord_t)(sh.pos.y + r) },
+                          { (lv_coord_t)(sh.pos.x - r), sh.pos.y } };
     lv_draw_rect_dsc_t g;
     lv_draw_rect_dsc_init(&g);
-    g.bg_color = sh.color;
+    g.bg_color = col;
     g.bg_opa = LV_OPA_COVER;
     lv_draw_polygon(d, &g, dia, 4);
 }
 
-static void draw_glyph(lv_draw_ctx_t *d, const ShipDraw &sh) {
-    if (sh.stationary) { draw_dot(d, sh); return; }
+static void draw_glyph(lv_draw_ctx_t *d, const ShipDraw &sh, lv_color_t col, float scale) {
+    if (sh.stationary) { draw_dot(d, sh, col, scale); return; }
     const float th = sh.rotDeg * (float)M_PI / 180.0f;
     const float c = cosf(th), s = sinf(th);
     lv_point_t pts[5];
     for (int i = 0; i < 5; ++i) {
-        const float x = SHX[i] * c - SHY[i] * s;
-        const float y = SHX[i] * s + SHY[i] * c;
+        const float x = (SHX[i] * scale) * c - (SHY[i] * scale) * s;
+        const float y = (SHX[i] * scale) * s + (SHY[i] * scale) * c;
         pts[i].x = (lv_coord_t)(sh.pos.x + (lv_coord_t)lroundf(x));
         pts[i].y = (lv_coord_t)(sh.pos.y + (lv_coord_t)lroundf(y));
     }
     lv_draw_rect_dsc_t g;
     lv_draw_rect_dsc_init(&g);
-    g.bg_color = sh.color;
+    g.bg_color = col;
     g.bg_opa = LV_OPA_COVER;
     lv_draw_polygon(d, &g, pts, 5);
 }
@@ -501,8 +509,10 @@ static void ship_draw_cb(lv_event_t *e) {
             }
         } else {
             if (!sh.inRange) continue;            // phosphor shows in-range traffic only
-            draw_trail(d, sh, sh.color);
-            draw_glyph(d, sh);
+            const bool isSel = (!s_selMmsi.empty() && s_selMmsi == sh.mmsi);
+            const lv_color_t gcol = isSel ? VESSEL_SEL : VESSEL_BLUE;   // blue contacts, green when selected
+            draw_trail(d, sh, gcol);
+            draw_glyph(d, sh, gcol, isSel ? 1.4f : 1.0f);               // selected vessel a bit larger
             if (sh.alert) {
                 lv_draw_arc_dsc_t h;
                 lv_draw_arc_dsc_init(&h);
@@ -511,7 +521,7 @@ static void ship_draw_cb(lv_event_t *e) {
             }
         }
 
-        // selection ring(s)
+        // selection ring(s) — green halo on the selected vessel
         if (!s_selMmsi.empty() && s_selMmsi == sh.mmsi) {
             lv_draw_arc_dsc_t sr;
             lv_draw_arc_dsc_init(&sr);
@@ -522,27 +532,12 @@ static void ship_draw_cb(lv_event_t *e) {
                 lv_draw_arc(d, &sr, &sh.pos, 15, 0, 360);
                 lv_draw_arc(d, &sr, &sh.pos, 23, 0, 360);
             } else {
-                sr.color = sh.alert ? COL_ALERT : s_cInk;
-                lv_draw_arc(d, &sr, &sh.pos, 19, 0, 360);
+                sr.color = sh.alert ? COL_ALERT : VESSEL_SEL;
+                lv_draw_arc(d, &sr, &sh.pos, 22, 0, 360);
             }
         }
-
-        // floating labels (phosphor only; orb keeps clean balls + the tap card)
-        if (!drg) {
-            lv_draw_label_dsc_t lc;
-            lv_draw_label_dsc_init(&lc);
-            lc.font = &lv_font_montserrat_14;
-            lc.color = s_cInk;
-            lv_area_t a1 = { (lv_coord_t)(sh.pos.x + 12), (lv_coord_t)(sh.pos.y - 14),
-                             (lv_coord_t)(sh.pos.x + 142), (lv_coord_t)(sh.pos.y + 2) };
-            if (sh.label1[0]) lv_draw_label(d, &lc, &a1, sh.label1, NULL);
-            lv_draw_label_dsc_t la;
-            lv_draw_label_dsc_init(&la);
-            la.font = &lv_font_montserrat_12;
-            la.color = sh.color;
-            lv_area_t a2 = { a1.x1, (lv_coord_t)(sh.pos.y + 2), a1.x2, (lv_coord_t)(sh.pos.y + 20) };
-            if (sh.label2[0]) lv_draw_label(d, &la, &a2, sh.label2, NULL);
-        }
+        // No per-vessel floating labels in this look — the selected vessel's details
+        // appear in the bottom readout (see ui.cpp), matching the reference design.
     }
 }
 
@@ -603,7 +598,7 @@ void setTheme(int t) {
         }
         lv_obj_set_style_bg_opa(s_parent, LV_OPA_COVER, 0);
     }
-    for (int i = 0; i < 4; ++i) show(s_rose[i], !drg);   // hide compass in Orb
+    for (int i = 0; i < 4; ++i) show(s_rose[i], !drg && s_compass);   // hide compass in Orb / when off
     show(s_rangeLbl, !drg && s_rangeLblVisible);
     show(s_centerDot, !drg);                             // orb draws an orange triangle instead
     show(s_pulse, !drg);
@@ -633,6 +628,12 @@ void setColorMode(int mode) {
 int colorMode() { return s_colorMode; }
 
 void setRangeLabelVisible(bool v) { s_rangeLblVisible = v; if (s_rangeLbl) show(s_rangeLbl, v && !orb()); }
+
+void setCompassVisible(bool v) {
+    s_compass = v;
+    const bool drg = orb();
+    for (int i = 0; i < 4; ++i) show(s_rose[i], v && !drg);
+}
 
 void setSweepEnabled(bool on) {
     s_sweepEnabled = on;

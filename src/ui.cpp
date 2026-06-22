@@ -20,8 +20,7 @@
 
 static lv_obj_t *s_tv = nullptr;
 static lv_obj_t *s_tileRadar = nullptr, *s_tileList = nullptr, *s_tileStats = nullptr;
-static lv_obj_t *s_card = nullptr, *s_cardTitle = nullptr, *s_cardL = nullptr, *s_cardR = nullptr;
-static lv_obj_t *s_cardFoot = nullptr;
+static lv_obj_t *s_card = nullptr, *s_cardTitle = nullptr, *s_cardBody = nullptr, *s_cardSub = nullptr;
 static lv_obj_t *s_hudWifi = nullptr, *s_hudCount = nullptr, *s_hudClock = nullptr, *s_hudBatt = nullptr, *s_hudDate = nullptr;
 static lv_obj_t *s_hudBars[4] = { nullptr, nullptr, nullptr, nullptr };   // WiFi signal-strength bars
 static lv_obj_t *s_list = nullptr;
@@ -31,15 +30,6 @@ static lv_obj_t *s_hudGps   = nullptr;   // HUD satellite icon (hidden unless GP
 static lv_obj_t *s_statsGps = nullptr;   // Stats view GPS status line
 
 // --------------------------------------------------------------------- formatting
-static void fmt_spd(char *b, size_t n, float kt) {
-    if (isnan(kt)) snprintf(b, n, "-");
-    else           snprintf(b, n, "%.1f kt", kt);
-}
-static void fmt_deg(char *b, size_t n, float deg) {
-    if (isnan(deg)) snprintf(b, n, "-");
-    else            snprintf(b, n, "%03.0f", deg);
-}
-
 // Fold Latin-1 accents / drop any other non-ASCII so the Montserrat font never hits a
 // missing glyph (which renders as an empty box). Belt-and-suspenders for card text.
 static void fold_ascii(char *s) {
@@ -81,31 +71,23 @@ static void refresh_card(void) {
     }
     lv_obj_clear_flag(s_card, LV_OBJ_FLAG_HIDDEN);
 
-    char title[44];
-    const char *nm = in.name[0] ? in.name : "(no name)";
-    if (in.type[0]) snprintf(title, sizeof(title), "%s  %s", nm, in.type);
-    else            snprintf(title, sizeof(title), "%s", nm);
+    // reference-style readout: name on top, Dist + SOG (Knots) below, a dim type/status line.
+    char title[28];
+    snprintf(title, sizeof(title), "%s", in.name[0] ? in.name : "(no name)");
     fold_ascii(title);
     lv_label_set_text(s_cardTitle, title);
     lv_obj_set_style_text_color(s_cardTitle, in.alert ? UI_ALERT : UI_INK, 0);
 
-    char spdS[16], cogS[8], hdgS[8];
-    fmt_spd(spdS, sizeof(spdS), in.sogKt);
-    fmt_deg(cogS, sizeof(cogS), in.cogDeg);
-    fmt_deg(hdgS, sizeof(hdgS), in.headingDeg);
+    char body[64];
+    if (isnan(in.sogKt)) snprintf(body, sizeof(body), "Dist: %.1f nm\nSOG: -", in.distNm);
+    else                 snprintf(body, sizeof(body), "Dist: %.1f nm\nSOG: %.1f Knots", in.distNm, in.sogKt);
+    lv_label_set_text(s_cardBody, body);
 
-    char left[96], right[96];
-    snprintf(left,  sizeof(left),  "MMSI %u\nSOG  %s\nDIST %.1f nm", in.mmsi, spdS, in.distNm);
-    snprintf(right, sizeof(right), "COG  %s\nHDG  %s\nBRG  %03.0f", cogS, hdgS, in.bearingDeg);
-    lv_label_set_text(s_cardL, left);
-    lv_label_set_text(s_cardR, right);
-
-    // footer: navigation status + destination (AIS carries both — no async lookup needed)
-    char foot[80];
-    if (in.dest[0]) snprintf(foot, sizeof(foot), "%s  " LV_SYMBOL_BULLET "  %s", in.status, in.dest);
-    else            snprintf(foot, sizeof(foot), "%s", in.status);
-    fold_ascii(foot);
-    lv_label_set_text(s_cardFoot, foot);
+    char sub[64];
+    if (in.dest[0]) snprintf(sub, sizeof(sub), "%s  " LV_SYMBOL_BULLET "  %s", in.type, in.dest);
+    else            snprintf(sub, sizeof(sub), "%s  " LV_SYMBOL_BULLET "  %s", in.type, in.status);
+    fold_ascii(sub);
+    lv_label_set_text(s_cardSub, sub);
 }
 
 // --------------------------------------------------------------------- input
@@ -335,38 +317,33 @@ static lv_obj_t *make_round_panel(lv_obj_t *parent) {
 static void build_card(void) {
     s_card = lv_obj_create(s_tileRadar);
     lv_obj_remove_style_all(s_card);
-    lv_obj_set_size(s_card, 300, 118);
-    lv_obj_align(s_card, LV_ALIGN_CENTER, 0, 66);
+    lv_obj_set_size(s_card, 250, 96);
+    lv_obj_align(s_card, LV_ALIGN_CENTER, 0, 86);
     lv_obj_set_style_bg_color(s_card, UI_PANEL, 0);
-    lv_obj_set_style_bg_opa(s_card, 235, 0);
+    lv_obj_set_style_bg_opa(s_card, 225, 0);
     lv_obj_set_style_radius(s_card, 14, 0);
     lv_obj_set_style_border_color(s_card, UI_GREEN, 0);
-    lv_obj_set_style_border_opa(s_card, 90, 0);
+    lv_obj_set_style_border_opa(s_card, 130, 0);
     lv_obj_set_style_border_width(s_card, 1, 0);
     lv_obj_set_style_pad_all(s_card, 12, 0);
     lv_obj_add_flag(s_card, LV_OBJ_FLAG_CLICKABLE);   // consume taps (don't deselect)
     lv_obj_clear_flag(s_card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(s_card, LV_OBJ_FLAG_HIDDEN);
 
-    s_cardTitle = lv_label_create(s_card);
+    s_cardTitle = lv_label_create(s_card);            // vessel name (white, bold)
     lv_obj_set_style_text_font(s_cardTitle, &lv_font_montserrat_16, 0);
     lv_obj_set_style_text_color(s_cardTitle, UI_INK, 0);
     lv_obj_align(s_cardTitle, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    s_cardL = lv_label_create(s_card);
-    lv_obj_set_style_text_font(s_cardL, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_cardL, UI_SOFT, 0);
-    lv_obj_align(s_cardL, LV_ALIGN_TOP_LEFT, 0, 26);
+    s_cardBody = lv_label_create(s_card);             // Dist / SOG (green, like the reference)
+    lv_obj_set_style_text_font(s_cardBody, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_color(s_cardBody, UI_GREEN, 0);
+    lv_obj_align(s_cardBody, LV_ALIGN_TOP_LEFT, 0, 26);
 
-    s_cardR = lv_label_create(s_card);
-    lv_obj_set_style_text_font(s_cardR, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_cardR, UI_SOFT, 0);
-    lv_obj_align(s_cardR, LV_ALIGN_TOP_LEFT, 158, 26);
-
-    s_cardFoot = lv_label_create(s_card);
-    lv_obj_set_style_text_font(s_cardFoot, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_cardFoot, UI_GREEN, 0);
-    lv_obj_align(s_cardFoot, LV_ALIGN_TOP_LEFT, 0, 84);
+    s_cardSub = lv_label_create(s_card);              // type / destination or status (dim)
+    lv_obj_set_style_text_font(s_cardSub, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(s_cardSub, UI_DIM, 0);
+    lv_obj_align(s_cardSub, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 }
 
 void ui_show_view(int idx) {
@@ -458,6 +435,7 @@ void ui_create(void) {
     lv_obj_clear_flag(s_tileRadar, LV_OBJ_FLAG_SCROLLABLE);
     radar::init(s_tileRadar);
     radar::setRangeLabelVisible(false);                     // the zoom button shows the range instead
+    radar::setCompassVisible(false);                        // north arrow in the HUD replaces the rose letters
     lv_obj_add_flag(s_tileRadar, LV_OBJ_FLAG_CLICKABLE);     // receive taps (vessels / empty)
     lv_obj_add_event_cb(s_tileRadar, radar_clicked_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(s_tileRadar, radar_press_cb, LV_EVENT_PRESSED, NULL);
@@ -483,12 +461,31 @@ void ui_create(void) {
     lv_obj_set_style_text_color(s_zoomLbl, UI_GREEN, 0);
     lv_obj_center(s_zoomLbl);
 
-    // top status HUD (wifi / vessel count / clock); white reads on both themes.
-    // WiFi is a 4-bar signal meter: bar count = RSSI strength, colour = feed health.
+    // --- top HUD: a big centred clock + date (reference style), a north marker
+    //     above it, and small wifi / battery / gps / count indicators flanking it. ---
+    lv_obj_t *north = lv_label_create(s_tileRadar);
+    lv_obj_set_style_text_font(north, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_color(north, UI_GREEN, 0);
+    lv_label_set_text(north, LV_SYMBOL_UP);
+    lv_obj_align(north, LV_ALIGN_TOP_MID, 0, 12);
+
+    s_hudClock = lv_label_create(s_tileRadar);
+    lv_obj_set_style_text_font(s_hudClock, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(s_hudClock, UI_INK, 0);
+    lv_label_set_text(s_hudClock, "--:--");
+    lv_obj_align(s_hudClock, LV_ALIGN_TOP_MID, 0, 36);
+
+    s_hudDate = lv_label_create(s_tileRadar);
+    lv_obj_set_style_text_font(s_hudDate, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(s_hudDate, UI_SOFT, 0);
+    lv_label_set_text(s_hudDate, "");
+    lv_obj_align(s_hudDate, LV_ALIGN_TOP_MID, 0, 72);
+
+    // WiFi 4-bar meter (small, left of the clock)
     s_hudWifi = lv_obj_create(s_tileRadar);
     lv_obj_remove_style_all(s_hudWifi);
     lv_obj_set_size(s_hudWifi, 21, 14);
-    lv_obj_align(s_hudWifi, LV_ALIGN_TOP_MID, -94, 50);
+    lv_obj_align(s_hudWifi, LV_ALIGN_TOP_MID, -78, 44);
     lv_obj_clear_flag(s_hudWifi, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     for (int i = 0; i < 4; ++i) {
         s_hudBars[i] = lv_obj_create(s_hudWifi);
@@ -501,36 +498,18 @@ void ui_create(void) {
         lv_obj_clear_flag(s_hudBars[i], LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     }
 
-    s_hudGps = lv_label_create(s_tileRadar);     // GPS satellite icon (between WiFi bars and count)
+    s_hudGps = lv_label_create(s_tileRadar);     // GPS icon (below the wifi bars)
     lv_obj_set_style_text_font(s_hudGps, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(s_hudGps, UI_GREEN, 0);
     lv_label_set_text(s_hudGps, "");             // hidden until ui_set_gps() says GPS is on
-    lv_obj_align(s_hudGps, LV_ALIGN_TOP_MID, -62, 50);
+    lv_obj_align(s_hudGps, LV_ALIGN_TOP_MID, -78, 64);
 
-    s_hudCount = lv_label_create(s_tileRadar);
-    lv_obj_set_style_text_font(s_hudCount, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_hudCount, UI_INK, 0);
-    lv_label_set_text(s_hudCount, "0");
-    lv_obj_align(s_hudCount, LV_ALIGN_TOP_MID, -34, 50);
-
-    s_hudClock = lv_label_create(s_tileRadar);
-    lv_obj_set_style_text_font(s_hudClock, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_hudClock, UI_INK, 0);
-    lv_label_set_text(s_hudClock, "--:--");
-    lv_obj_align(s_hudClock, LV_ALIGN_TOP_MID, 30, 50);
-
-    s_hudBatt = lv_label_create(s_tileRadar);
+    s_hudBatt = lv_label_create(s_tileRadar);    // battery (right of the clock)
     lv_obj_set_style_text_font(s_hudBatt, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(s_hudBatt, UI_INK, 0);
     lv_label_set_text(s_hudBatt, "");
-    lv_obj_align(s_hudBatt, LV_ALIGN_TOP_MID, 92, 50);
-
-    s_hudDate = lv_label_create(s_tileRadar);
-    lv_obj_set_style_text_font(s_hudDate, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(s_hudDate, UI_INK, 0);
-    lv_obj_set_style_text_opa(s_hudDate, 140, 0);
-    lv_label_set_text(s_hudDate, "");
-    lv_obj_align(s_hudDate, LV_ALIGN_TOP_MID, 0, 70);
+    lv_obj_align(s_hudBatt, LV_ALIGN_TOP_MID, 74, 44);
+    // (vessel count is shown in the Stats view; the radar HUD stays clean, like the reference)
 
     // --- list tile (circular panel, clipped to the round screen) ---
     lv_obj_t *lp = make_round_panel(s_tileList);

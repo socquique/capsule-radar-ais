@@ -69,6 +69,7 @@ void setThemeChangedCb(void (*cb)(int theme));   // called when the theme change
 void setColorMode(int mode);                     // 0 = nav status, 1 = ship type
 int  colorMode();
 void setRangeLabelVisible(bool v);               // hide the built-in range label (UI shows its own)
+void setCompassVisible(bool v);                  // show/hide the N/S/E/W rose letters
 void setSweepEnabled(bool on);                   // show/hide the rotating sweep line
 bool sweepEnabled();
 void setTrailLength(int level);                  // 0=off 1=short 2=medium 3=long (vessel trails + flow)
