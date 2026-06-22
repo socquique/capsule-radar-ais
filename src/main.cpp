@@ -302,7 +302,8 @@ static void handleRoot() {
         "<div class=hd><div class=dot></div><div><h1>Capsule Radar Marine</h1><p class=sub>Live AIS ship radar &middot; configuration</p></div></div>"
         "<div class=card><div class=t>AIS feed</div><form method=POST action=/save>"
         "<label>aisstream.io API key</label><input name=aiskey value='%s' placeholder='paste your free key'>"
-        "<div style='font-size:12px;opacity:.6;margin:-2px 0 6px'>Free, non-commercial key from aisstream.io. Stored on the device only.</div>"
+        "<div style='font-size:12px;opacity:.6;margin:-2px 0 6px'>Free, non-commercial. Get one at "
+        "<a href='https://aisstream.io' target=_blank style='color:#9affc8'>aisstream.io</a> &rarr; Create API Key. Stored on the device only.</div>"
         "<div class=t style='margin-top:14px'>Location &amp; range</div>"
         "<label>Center point &mdash; tap the map or drag the pin</label>"
         "<div id=map></div>"
@@ -555,6 +556,10 @@ void setup() {
     // --- WiFi (captive portal, non-blocking) + aisstream API-key field ----
     g_wm.setConfigPortalBlocking(false);
     g_wm.setTitle("Capsule Radar Marine");
+    static WiFiManagerParameter apiKeyHint(
+        "<p style='font-size:13px;margin:8px 0 0'>Need a key? Get a free one at "
+        "<a href='https://aisstream.io' target='_blank'>aisstream.io</a> &rarr; Create API Key.</p>");
+    g_wm.addParameter(&apiKeyHint);
     g_apiKeyParam = new WiFiManagerParameter("aiskey", "aisstream.io API key", g_apiKey.c_str(), 48);
     g_wm.addParameter(g_apiKeyParam);
     g_wm.setCustomHeadElement(
