@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <img src="docs/img/radar.png" width="320" alt="Capsule Radar Marine live scope">
+  <img src="docs/img/device.jpg" width="330" alt="Capsule Radar Marine on its tilt stand">
 </p>
-<p align="center"><sub>The live AIS scope: vessels around you rotated by course, with the coastline, sweep and clock. <i>(Tip: replace this with a photo of your build — drop it at <code>docs/img/device.jpg</code> and update this line.)</i></sub></p>
+<p align="center"><sub>The finished build on its tilt stand — live AIS scope with the coastline, animated sweep, clock and range. Marine sibling of the aircraft Capsule Radar.</sub></p>
 
 A live **AIS ship radar** for the **Waveshare ESP32-S3-Touch-AMOLED-1.75** — a round 466×466 AMOLED with capacitive touch. It pulls nearby **vessels** from a free online **AIS** feed over WiFi and plots them on a touch radar scope centered on your home, harbour, or a spot by a navigable river/canal — useful by the sea **and** inland. It's the **marine sibling of [Capsule Radar](https://github.com/socquique/capsule-radar)** (the live *aircraft* radar): same board, same look & feel, ships instead of planes.
 
@@ -123,6 +123,11 @@ web/flash/           browser web-flasher (ESP Web Tools) for makers
 scripts/             build_webflasher.sh (merge firmware -> single .bin)
 docs/                hardware / data-source / architecture / MakerWorld notes
 ```
+
+<p align="center">
+  <img src="docs/img/build.jpg" width="300" alt="The 3D-printed enclosure: tilt stand + magnetic back">
+</p>
+<p align="center"><sub>Tilt stand, magnetic snap-on back and a built-in speaker — prints with <b>no AMS</b> in ~2 h (6× magnets + 3× M2×6 screws + printed pins). See <a href="docs/MAKERWORLD.md">docs/MAKERWORLD.md</a>.</sub></p>
 
 ## Data & license
 
