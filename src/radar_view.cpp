@@ -398,7 +398,7 @@ static void draw_trail(lv_draw_ctx_t *d, const ShipDraw &sh, lv_color_t col) {
     t.color = col;
     t.width = 2;
     for (int i = 1; i < n; ++i) {
-        t.opa = (lv_opa_t)(10 + 45 * i / n);
+        t.opa = (lv_opa_t)(30 + 150 * i / n);   // brighter so slow-built marine tracks read clearly
         lv_point_t a = sh.trail[i - 1], b = sh.trail[i];
         lv_draw_line(d, &t, &a, &b);
     }
@@ -665,12 +665,14 @@ bool sweepEnabled() { return s_sweepEnabled; }
 
 // 0 = off, 1 = short, 2 = medium (default), 3 = long. Controls both the per-vessel
 // trail and the persistent flow layer (the long-lived "where everything has been" tracks).
+// Tuned for MARINE speeds: vessels crawl ~1-2 px/min on a wide scope, so the tracks
+// must persist for many minutes (flowGenMax counts ~1 Hz updates, so ~= seconds).
 void setTrailLength(int level) {
     switch (level) {
-        case 0: s_trailMax = 0;  s_flowMax = 0;    s_flowGenMax = 0;  break;
-        case 1: s_trailMax = 3;  s_flowMax = 150;  s_flowGenMax = 8;  break;
-        case 3: s_trailMax = 12; s_flowMax = 1500; s_flowGenMax = 30; break;
-        default: s_trailMax = 7; s_flowMax = 700;  s_flowGenMax = 14; break;
+        case 0: s_trailMax = 0;  s_flowMax = 0;    s_flowGenMax = 0;   break;
+        case 1: s_trailMax = 12; s_flowMax = 600;  s_flowGenMax = 120; break;  // ~2 min
+        case 3: s_trailMax = 48; s_flowMax = 2000; s_flowGenMax = 900; break;  // ~15 min
+        default: s_trailMax = 24; s_flowMax = 1200; s_flowGenMax = 360; break; // ~6 min
     }
     if (s_flowMax == 0) { s_flow.clear(); s_trails.clear(); }
     else while ((int)s_flow.size() > s_flowMax) s_flow.pop_front();

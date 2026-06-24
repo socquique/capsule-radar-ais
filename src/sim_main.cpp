@@ -104,6 +104,7 @@ static void mock_init() {
     g_ships.push_back(mk(224588000, "CIUDAD DE PALMA",35.3, 356, 18.0, 200, NAV_UNDERWAY_ENGINE,   69, "PALMA"));
     g_ships.push_back(mk(311045500, "AKNOUL",         36.4,  59, 12.4, 217, NAV_UNDERWAY_ENGINE,   70, "-"));
     g_ships.push_back(mk(255805844, "TROUPER",        37.2, 358,  9.5,  79, NAV_UNDERWAY_ENGINE,   0,  "-"));
+    g_ships.push_back(mk(224990010, "MARINA DENIA",    7.0, 272, 16.0,   0, NAV_UNDERWAY_ENGINE,   60, "DENIA"));  // demo mover (clear of sweep)
     g_init = g_ships;
 }
 
@@ -179,6 +180,7 @@ int main(int argc, char **argv) {
     ui_set_range_cb(sim_range_cb);
     ui_set_range_nm(RANGE_STEPS_NM[g_rangeIdx]);
     radar::setWatchMmsi(275524000);   // demo: watch PERSEUS (amber halo)
+    radar::setTrailLength(3);          // long trails (match the device default-ish for the demo)
     mock_init();
     radar::update(g_ships, g_set);
     ui_on_data_updated();
@@ -236,7 +238,7 @@ int main(int argc, char **argv) {
 
         // headless screenshot mode (--shot <prefix>): settle, grab views/themes, exit
         if (shotPath && now - start > 2800) {
-            for (int k = 0; k < 30; ++k) { mock_step(1.0); radar::update(g_ships, g_set); }
+            for (int k = 0; k < 800; ++k) { mock_step(1.0); radar::update(g_ships, g_set); }  // fast-forward: let trails build
             radar::select(5);            // SUNBELT SPIRIT (moving cargo → VALENCIA) for the card
             ui_on_data_updated();
             int ow, oh; SDL_GetRendererOutputSize(s_ren, &ow, &oh);
