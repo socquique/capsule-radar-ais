@@ -3,7 +3,7 @@
 // Sibling of the aircraft "Capsule Radar". Same board; the pin map + I2C addresses
 // below are copied VERBATIM from the verified aircraft config (do NOT re-derive them).
 
-#define FW_VERSION "0.1.0"   // shown on the web config page + Stats screen; bump on release
+#define FW_VERSION "0.1.1"   // shown on the web config page + Stats screen; bump on release
 
 // ---------- Home location (default: Dénia, Spain — coastal, good AIS coverage) ----------
 // Overridable at runtime via the captive portal (stored in NVS).
