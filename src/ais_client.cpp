@@ -109,6 +109,7 @@ void AisClient::onEvent(int type, uint8_t* payload, size_t length) {
             Serial.println("[ais] WebSocket disconnected — will reconnect");
             break;
         case WStype_TEXT:
+        case WStype_BIN:                 // aisstream pushes the JSON as BINARY frames
             ingest((const char*)payload, length);
             break;
         case WStype_ERROR:
