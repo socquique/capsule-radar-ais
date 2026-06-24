@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/MakerWorld-coming%20soon-1A8917?logo=bambulab&logoColor=white" alt="MakerWorld – coming soon">
   <img src="https://img.shields.io/badge/board-ESP32--S3%20round%20AMOLED-E7352C?logo=espressif&logoColor=white" alt="Board: ESP32-S3 round AMOLED">
   <img src="https://img.shields.io/badge/feed-AIS%20%C2%B7%20aisstream.io-0A7EA4" alt="Feed: AIS via aisstream.io">
+  <img src="https://img.shields.io/badge/live%20feed-%E2%9C%93%20verified%20on%20hardware-2ea043" alt="Live feed verified on hardware">
   <a href="https://github.com/socquique/capsule-radar-ais/releases"><img src="https://img.shields.io/github/v/tag/socquique/capsule-radar-ais?label=firmware&color=7B42BC" alt="Firmware version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-2088FF" alt="License: MIT"></a>
   <a href="https://github.com/socquique/capsule-radar-ais/stargazers"><img src="https://img.shields.io/github/stars/socquique/capsule-radar-ais?style=social" alt="GitHub stars"></a>
@@ -21,7 +22,7 @@ A live **AIS ship radar** for the **Waveshare ESP32-S3-Touch-AMOLED-1.75** — a
 |:--:|:--:|:--:|:--:|
 | ![Phosphor](docs/img/radar.png) | ![Orb](docs/img/orb.png) | ![Amber](docs/img/amber.png) | ![Military](docs/img/military.png) |
 
-<sub>Captured from the bundled desktop simulator (the device screen is round; the square corners are off-panel).</sub>
+<sub>Real AIS traffic around Dénia (a live snapshot from aisstream), rendered by the bundled desktop simulator — the device screen is round, so the square corners are off-panel.</sub>
 
 ## Features
 

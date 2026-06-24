@@ -61,7 +61,7 @@ static void sdl_mouse_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 static std::vector<Ship> g_ships;
 static std::vector<Ship> g_init;
 static RadarSettings g_set;
-static int g_rangeIdx = 2;   // index into RANGE_STEPS_NM (10 nm)
+static int g_rangeIdx = 3;   // index into RANGE_STEPS_NM (20 nm)
 
 static Ship mk(uint32_t mmsi, const char *name, double distNm, double brgDeg,
                float sog, float cog, uint8_t nav, uint16_t type, const char *dest) {
@@ -89,17 +89,19 @@ static void mock_init() {
     g_set.colorMode = COLOR_MODE_DEFAULT;
     g_set.rotationDeg = 0.0;
     g_ships.clear();
-    //              mmsi       name                distNm  brg     sog   cog  nav                    type  dest
-    g_ships.push_back(mk(224001000, "VOLCAN DE TINAMAR", 3.0, 170.0, 14.2, 200, NAV_UNDERWAY_ENGINE,   61, "VALENCIA"));
-    g_ships.push_back(mk(228001111, "CMA CGM RHONE",     5.5,  60.0, 18.6, 250, NAV_UNDERWAY_ENGINE,   71, "ALGECIRAS"));
-    g_ships.push_back(mk(255002222, "STENA IMPERO",      7.0, 200.0,  0.1,   0, NAV_AT_ANCHOR,         82, "-"));
-    g_ships.push_back(mk(269003333, "AGUILA",            4.0, 300.0,  6.4, 135, NAV_FISHING,           30, "FISHING GND"));
-    g_ships.push_back(mk(211004444, "WINDSEEKER",        6.2,  20.0,  7.8,  45, NAV_UNDERWAY_SAILING,  36, "IBIZA"));
-    g_ships.push_back(mk(247005555, "PORTO PILOT",       2.2, 240.0,  0.0,   0, NAV_MOORED,            50, "DENIA"));
-    g_ships.push_back(mk(235006666, "OCEAN GUARDIAN",    8.5, 110.0,  3.1,  90, NAV_NOT_UNDER_COMMAND, 90, "-"));
-    // out of range (> 10 nm) -> edge markers (orb theme) / culled (phosphor)
-    g_ships.push_back(mk(256007777, "BALEARIA EXPRESS", 18.0,  30.0, 24.0, 210, NAV_UNDERWAY_ENGINE,   40, "PALMA"));
-    g_ships.push_back(mk(257008888, "NORD STAR",        24.0, 300.0, 12.0, 120, NAV_UNDERWAY_ENGINE,   80, "MARSEILLE"));
+    // A real snapshot of AIS traffic around Dénia (captured from aisstream), so the
+    // demo looks like the device does in the field. mk(): distNm + bearing from home.
+    //              mmsi        name              distNm  brg   sog   cog  nav                    type dest
+    g_ships.push_back(mk(224071970, "L'ILLA PLANA",    0.4,  57,  0.0,   0, NAV_MOORED,            0,  "DENIA"));
+    g_ships.push_back(mk(538072104, "DONA FRANCISCA",  0.6,  67,  0.0,   0, NAV_AT_ANCHOR,         36, "-"));
+    g_ships.push_back(mk(225990333, "CANALLA 2",      10.9, 346,  0.0,   0, NAV_AT_ANCHOR,         0,  "-"));
+    g_ships.push_back(mk(275524000, "PERSEUS",        14.5, 116, 12.0, 170, NAV_UNDERWAY_ENGINE,   0,  "-"));
+    g_ships.push_back(mk(268248702, "MAHALO",         15.4, 308,  0.0,   0, NAV_MOORED,            0,  "-"));
+    g_ships.push_back(mk(538001657, "SUNBELT SPIRIT", 17.5,  96, 13.5, 216, NAV_UNDERWAY_ENGINE,   79, "VALENCIA"));
+    // out of range (> 20 nm) -> edge markers (orb theme) / culled (phosphor)
+    g_ships.push_back(mk(224588000, "CIUDAD DE PALMA",35.3, 356, 18.0, 200, NAV_UNDERWAY_ENGINE,   69, "PALMA"));
+    g_ships.push_back(mk(311045500, "AKNOUL",         36.4,  59, 12.4, 217, NAV_UNDERWAY_ENGINE,   70, "-"));
+    g_ships.push_back(mk(255805844, "TROUPER",        37.2, 358,  9.5,  79, NAV_UNDERWAY_ENGINE,   0,  "-"));
     g_init = g_ships;
 }
 
@@ -226,7 +228,7 @@ int main(int argc, char **argv) {
         // headless screenshot mode (--shot <prefix>): settle, grab views/themes, exit
         if (shotPath && now - start > 2800) {
             for (int k = 0; k < 30; ++k) { mock_step(1.0); radar::update(g_ships, g_set); }
-            radar::select(1);            // select a moving vessel so the card shows
+            radar::select(5);            // SUNBELT SPIRIT (moving cargo → VALENCIA) for the card
             ui_on_data_updated();
             int ow, oh; SDL_GetRendererOutputSize(s_ren, &ow, &oh);
             struct Shot { const char *name; int view; int theme; };
