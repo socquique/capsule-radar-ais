@@ -46,6 +46,7 @@ static float                g_proximityNm = 0.0f;                  // proximity 
 static uint32_t             g_idleDimMs = IDLE_DIM_MS;             // dim after this idle time (0 = never)
 static bool                 g_showSweep = true;                    // rotating sweep line on/off
 static int                  g_colorMode = COLOR_MODE_DEFAULT;      // 0=nav status 1=ship type
+static uint32_t             g_watchMmsi = 0;                       // watched vessel ("a friend's boat"); 0 = off
 static int                  g_rotation = 0;                        // display rotation 0/1/2/3
 static bool                 g_useGps = false;                      // auto-set home from the LC76G GPS
 static int                  g_trailLen = 2;                        // vessel trails 0=off 1=short 2=med 3=long
@@ -101,6 +102,12 @@ static void ais_task(void*) {
             delay(100);
             ESP.restart();
         }
+        // stale-feed self-heal: socket "connected" but no AIS message for a long time
+        // (seen after aisstream outages) -> drop + reopen to force a fresh subscription.
+        if (conn && g_ais.connected() &&
+            (millis() - g_ais.lastActivityMs()) > (uint32_t)AIS_STALE_RECONNECT_MS) {
+            g_ais.forceReconnect();
+        }
         vTaskDelay(pdMS_TO_TICKS(10));         // tight loop: the WS lib needs frequent service
     }
 }
@@ -112,6 +119,7 @@ static void loadSettings() {
     g_settings.homeLon = p.getDouble("homeLon", HOME_LON_DEFAULT);
     g_settings.rangeNm = p.getFloat("rangeNm", RANGE_NM_DEFAULT);
     g_colorMode        = p.getInt("colormode", COLOR_MODE_DEFAULT);
+    g_watchMmsi        = p.getUInt("watchmmsi", 0);
     g_brightnessDay    = p.getInt("bright", BRIGHTNESS_DEFAULT);
     g_volume           = p.getInt("vol", 60);
     g_muted            = p.getBool("mute", false);
@@ -134,7 +142,14 @@ static void checkAudioEvents() {
     static bool first = true;
     static uint32_t lastNew = 0;
     std::set<uint32_t> now, nowProx;
+    static bool watchPresent = false;
+    bool watchNow = false;
     for (const Ship &v : g_snap) {
+        // watched vessel: ping once when it (re)appears anywhere in the snapshot
+        if (g_watchMmsi && v.mmsi == g_watchMmsi) {
+            watchNow = true;
+            if (!watchPresent) { audio_play(AUDIO_ALERT); Serial.printf("[ais] watched vessel %u appeared\n", g_watchMmsi); }
+        }
         const double d = geo::kmToNm(geo::haversineKm(g_settings.homeLat, g_settings.homeLon, v.lat, v.lon));
         if (d > g_settings.rangeNm) continue;                 // in-range only
         now.insert(v.mmsi);
@@ -155,6 +170,7 @@ static void checkAudioEvents() {
     }
     seen.swap(now);
     seenProx.swap(nowProx);
+    watchPresent = watchNow;
     first = false;
 }
 
@@ -267,6 +283,9 @@ static void handleRoot() {
         gpsRow += g_useGps ? "checked" : "";
         gpsRow += " onchange='gp(this.checked)'>Use GPS for location</label>";
     }
+    char watchStr[12];
+    if (g_watchMmsi) snprintf(watchStr, sizeof(watchStr), "%u", g_watchMmsi); else watchStr[0] = '\0';
+
     static const size_t BUFSZ = 11264;
     static char *buf = (char *)ps_malloc(BUFSZ);   // PSRAM: keep this big page off the scarce internal heap
     if (!buf) return;
@@ -304,6 +323,8 @@ static void handleRoot() {
         "<label>aisstream.io API key</label><input name=aiskey value='%s' placeholder='paste your free key'>"
         "<div style='font-size:12px;opacity:.6;margin:-2px 0 6px'>Free, non-commercial. Get one at "
         "<a href='https://aisstream.io' target=_blank style='color:#9affc8'>aisstream.io</a> &rarr; Create API Key. Stored on the device only.</div>"
+        "<label>Watch a vessel (MMSI) &mdash; optional</label><input name=watch value='%s' placeholder='e.g. 224071970'>"
+        "<div style='font-size:12px;opacity:.6;margin:-2px 0 6px'>Highlights it on the scope and pings when it appears (a friend's boat). Blank = off.</div>"
         "<div class=t style='margin-top:14px'>Location &amp; range</div>"
         "<label>Center point &mdash; tap the map or drag the pin</label>"
         "<div id=map></div>"
@@ -359,7 +380,7 @@ static void handleRoot() {
         "for(i=0;i<e.options.length;i++){if(+e.options[i].dataset.off===o&&+e.options[i].dataset.dst===s){b=i;break;}}"
         "if(b<0)for(i=0;i<e.options.length;i++){if(+e.options[i].dataset.off===o){b=i;break;}}"
         "if(b>=0)e.selectedIndex=b;})();</script></body></html>",
-        g_apiKey.c_str(), g_settings.homeLat, g_settings.homeLon, gpsRow.c_str(),
+        g_apiKey.c_str(), watchStr, g_settings.homeLat, g_settings.homeLon, gpsRow.c_str(),
         ropts.c_str(), copts.c_str(), topts.c_str(), tzopts.c_str(),
         g_brightnessDay, iopts.c_str(), g_showSweep ? "checked" : "",
         tlopts.c_str(), rotopts.c_str(),
@@ -372,6 +393,7 @@ static void handleSave() {
     Preferences p;
     p.begin(NVS_NS, false);
     if (g_web.hasArg("aiskey")) p.putString("aiskey", g_web.arg("aiskey"));
+    if (g_web.hasArg("watch"))  p.putUInt("watchmmsi", (uint32_t)strtoul(g_web.arg("watch").c_str(), nullptr, 10));
     if (g_web.hasArg("lat")) {
         const double lat = g_web.arg("lat").toDouble();
         if (lat >= -90.0 && lat <= 90.0) p.putDouble("homeLat", lat);
@@ -537,6 +559,7 @@ void setup() {
         radar::setSweepEnabled(g_showSweep);
         radar::setColorMode(g_colorMode);
         radar::setTrailLength(g_trailLen);
+        radar::setWatchMmsi(g_watchMmsi);
         display::setRotation((uint8_t)g_rotation);
     }
     radar::setThemeChangedCb(saveTheme);

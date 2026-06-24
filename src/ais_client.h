@@ -29,6 +29,9 @@ public:
 
     bool     connected() const { return _connected; }
     uint32_t lastMsgMs() const { return _lastMsgMs; }   // 0 until the first message
+    // Most recent sign of life (last message, or last connect) — for stale-feed self-heal.
+    uint32_t lastActivityMs() const { return _lastMsgMs > _lastConnectMs ? _lastMsgMs : _lastConnectMs; }
+    void     forceReconnect();                           // drop + reopen the WSS (re-subscribes)
     size_t   trackedCount();                             // vessels currently in the table
 
 private:
@@ -43,5 +46,6 @@ private:
     bool     _connected = false;
     bool     _begun = false;
     uint32_t _lastMsgMs = 0;
+    uint32_t _lastConnectMs = 0;
     std::map<uint32_t, Ship> _ships;   // keyed by MMSI
 };

@@ -73,6 +73,18 @@ void AisClient::loop() {
     if (_begun) s_ws.loop();
 }
 
+// Drop and reopen the secure WebSocket. Used by the stale-feed watchdog: aisstream
+// can keep a socket "connected" yet stream nothing (we saw this during an outage and
+// after recovery) — a fresh connection re-sends the subscription and gets data flowing.
+void AisClient::forceReconnect() {
+    if (!_begun) return;
+    Serial.println("[ais] forcing WSS reconnect (stale feed)");
+    _connected = false;
+    s_ws.disconnect();
+    s_ws.beginSSL(AIS_HOST, AIS_PORT, AIS_PATH);   // re-initiate; CONNECTED -> re-subscribe
+    _lastConnectMs = millis();                      // reset the staleness clock
+}
+
 // Build + send the subscription JSON. aisstream wants the box as
 // [[ [SW-lat, SW-lon], [NE-lat, NE-lon] ]].
 void AisClient::sendSubscription() {
@@ -101,6 +113,7 @@ void AisClient::onEvent(int type, uint8_t* payload, size_t length) {
     switch ((WStype_t)type) {
         case WStype_CONNECTED:
             _connected = true;
+            _lastConnectMs = millis();
             Serial.println("[ais] WebSocket connected");
             sendSubscription();
             break;
@@ -187,6 +200,13 @@ void AisClient::ingest(const char* json, size_t len) {
         if (!dim.isNull()) {
             sh.lengthM = (uint16_t)((dim["A"] | 0) + (dim["B"] | 0));
             sh.beamM   = (uint16_t)((dim["C"] | 0) + (dim["D"] | 0));
+        }
+        if (sd["MaximumStaticDraught"].is<float>()) sh.draughtM = sd["MaximumStaticDraught"].as<float>();
+        JsonObjectConst eta = sd["Eta"];
+        if (!eta.isNull()) {
+            sh.etaDay  = (uint8_t)(eta["Day"]    | 0);
+            sh.etaHour = (uint8_t)(eta["Hour"]   | 24);
+            sh.etaMin  = (uint8_t)(eta["Minute"] | 60);
         }
     }
 

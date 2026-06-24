@@ -35,7 +35,12 @@ struct ShipInfo {
     float headingDeg;      // NaN if unknown
     float distNm;
     float bearingDeg;
+    uint16_t lengthM;      // 0 if unknown
+    uint16_t beamM;        // 0 if unknown
+    float draughtM;        // NaN if unknown
+    char  eta[12];         // "" if unknown
     bool  alert;           // not-under-command / aground / SART
+    bool  watched;         // matches the user's watched MMSI
 };
 
 namespace radar {
@@ -68,6 +73,7 @@ void cycleTheme();
 void setThemeChangedCb(void (*cb)(int theme));   // called when the theme changes (for persistence)
 void setColorMode(int mode);                     // 0 = nav status, 1 = ship type
 int  colorMode();
+void setWatchMmsi(uint32_t mmsi);                // highlight a specific vessel (0 = none)
 void setRangeLabelVisible(bool v);               // hide the built-in range label (UI shows its own)
 void setCompassVisible(bool v);                  // show/hide the N/S/E/W rose letters
 void setSweepEnabled(bool on);                   // show/hide the rotating sweep line

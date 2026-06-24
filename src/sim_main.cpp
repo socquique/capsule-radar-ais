@@ -98,6 +98,8 @@ static void mock_init() {
     g_ships.push_back(mk(275524000, "PERSEUS",        14.5, 116, 12.0, 170, NAV_UNDERWAY_ENGINE,   0,  "-"));
     g_ships.push_back(mk(268248702, "MAHALO",         15.4, 308,  0.0,   0, NAV_MOORED,            0,  "-"));
     g_ships.push_back(mk(538001657, "SUNBELT SPIRIT", 17.5,  96, 13.5, 216, NAV_UNDERWAY_ENGINE,   79, "VALENCIA"));
+    g_ships.back().lengthM = 120; g_ships.back().beamM = 18; g_ships.back().draughtM = 6.5f;   // demo: rich card
+    g_ships.back().etaDay = 24;   g_ships.back().etaHour = 14; g_ships.back().etaMin = 30;
     // out of range (> 20 nm) -> edge markers (orb theme) / culled (phosphor)
     g_ships.push_back(mk(224588000, "CIUDAD DE PALMA",35.3, 356, 18.0, 200, NAV_UNDERWAY_ENGINE,   69, "PALMA"));
     g_ships.push_back(mk(311045500, "AKNOUL",         36.4,  59, 12.4, 217, NAV_UNDERWAY_ENGINE,   70, "-"));
@@ -176,6 +178,7 @@ int main(int argc, char **argv) {
     ui_create();
     ui_set_range_cb(sim_range_cb);
     ui_set_range_nm(RANGE_STEPS_NM[g_rangeIdx]);
+    radar::setWatchMmsi(275524000);   // demo: watch PERSEUS (amber halo)
     mock_init();
     radar::update(g_ships, g_set);
     ui_on_data_updated();
@@ -203,6 +206,12 @@ int main(int argc, char **argv) {
                         int n = (int)(sizeof(RANGE_STEPS_NM)/sizeof(RANGE_STEPS_NM[0]));
                         sim_range_cb(RANGE_STEPS_NM[(g_rangeIdx + 1) % n]);
                         printf("[sim] range: %.0f nm\n", (double)g_set.rangeNm);
+                        break;
+                    }
+                    case SDLK_w: {   // toggle "watch" on the selected vessel
+                        ShipInfo in;
+                        if (radar::selected(in)) { radar::setWatchMmsi(in.watched ? 0 : in.mmsi);
+                            printf("[sim] watch %s -> %u\n", in.name, in.watched ? 0 : in.mmsi); }
                         break;
                     }
                 }

@@ -39,6 +39,8 @@ struct Ship {
     uint16_t type = 0;          // AIS ship type code -> category/colour (0 = unknown)
     uint16_t lengthM = 0;       // from Dimension A+B (optional)
     uint16_t beamM   = 0;       // from Dimension C+D (optional)
+    float    draughtM = NAN;    // MaximumStaticDraught, metres (optional)
+    uint8_t  etaDay = 0, etaHour = 24, etaMin = 60;  // ETA (day / HH:MM); 0/24/60 = not available
     uint32_t lastSeenMs = 0;    // millis() of last message (expiry + staleness)
 };
 

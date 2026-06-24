@@ -56,6 +56,9 @@ static const float RANGE_STEPS_NM[] = {2.0f, 5.0f, 10.0f, 20.0f, 40.0f};
 #define AIS_API_KEY_FALLBACK ""
 #define AIS_RECONNECT_MIN_MS  2000          // backoff floor after a disconnect/error
 #define AIS_RECONNECT_MAX_MS  30000         // backoff ceiling
+// Self-heal: aisstream can stay "connected" yet stream nothing. If no AIS message
+// arrives for this long while connected, drop + reopen the socket (re-subscribes).
+#define AIS_STALE_RECONNECT_MS (8 * 60 * 1000)
 
 // ---------- Debug ----------
 #define DEBUG_MEM           0               // 1 = print a [mem] heap/fps line every 5s on serial

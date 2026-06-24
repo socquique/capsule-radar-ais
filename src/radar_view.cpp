@@ -102,6 +102,7 @@ static uint32_t    s_pollMs       = UPDATE_FALLBACK_MS;
 static int         s_frameCtr     = 0;
 static lv_coord_t  s_cx = SCREEN_CX, s_cy = SCREEN_CY;
 static std::string s_selMmsi;
+static std::string s_watchMmsi;   // user-watched vessel ("a friend's boat"); highlighted
 
 struct FlowSeg { lv_point_t a, b; uint16_t gen; };   // gen = the update it was laid down on
 static std::deque<FlowSeg> s_flow;
@@ -125,6 +126,9 @@ struct ShipDraw {
     char       status[16];
     char       dest[24];
     float      sogKt, cogDeg, headingDeg, distNm, bearingDeg;
+    uint16_t   lengthM, beamM;
+    float      draughtM;
+    char       eta[12];
     uint8_t    navStatus;      // raw, kept so setColorMode() can recolour in place
     uint16_t   shipType;       // raw AIS type code
     bool       hasAlertFlag;
@@ -536,6 +540,15 @@ static void ship_draw_cb(lv_event_t *e) {
                 lv_draw_arc(d, &sr, &sh.pos, 22, 0, 360);
             }
         }
+        // watched vessel ("a friend's boat"): a distinct amber double halo, always on
+        if (!s_watchMmsi.empty() && s_watchMmsi == sh.mmsi) {
+            lv_draw_arc_dsc_t wr;
+            lv_draw_arc_dsc_init(&wr);
+            wr.color = lv_color_hex(0xFFB23C);
+            wr.width = 2; wr.opa = 255;
+            lv_draw_arc(d, &wr, &sh.pos, 18, 0, 360);
+            lv_draw_arc(d, &wr, &sh.pos, 26, 0, 360);
+        }
         // No per-vessel floating labels in this look — the selected vessel's details
         // appear in the bottom readout (see ui.cpp), matching the reference design.
     }
@@ -626,6 +639,12 @@ void setColorMode(int mode) {
     if (s_shipLayer) lv_obj_invalidate(s_shipLayer);
 }
 int colorMode() { return s_colorMode; }
+
+void setWatchMmsi(uint32_t mmsi) {
+    if (mmsi == 0) s_watchMmsi.clear();
+    else { char b[12]; snprintf(b, sizeof(b), "%u", mmsi); s_watchMmsi = b; }
+    if (s_shipLayer) lv_obj_invalidate(s_shipLayer);
+}
 
 void setRangeLabelVisible(bool v) { s_rangeLblVisible = v; if (s_rangeLbl) show(s_rangeLbl, v && !orb()); }
 
@@ -815,6 +834,13 @@ void update(const std::vector<Ship> &ships, const RadarSettings &s) {
         d.headingDeg = v.headingDeg;
         d.distNm = (float)distNm;
         d.bearingDeg = (float)brg;
+        d.lengthM = v.lengthM;
+        d.beamM = v.beamM;
+        d.draughtM = v.draughtM;
+        if (v.etaHour < 24 && v.etaMin < 60) {
+            if (v.etaDay > 0) snprintf(d.eta, sizeof(d.eta), "%02u %02u:%02u", v.etaDay, v.etaHour, v.etaMin);
+            else              snprintf(d.eta, sizeof(d.eta), "%02u:%02u", v.etaHour, v.etaMin);
+        } else d.eta[0] = '\0';
 
         // labels: name (or MMSI) on top, then speed if moving else status
         if (d.name[0]) snprintf(d.label1, sizeof(d.label1), "%s", d.name);
@@ -918,7 +944,10 @@ static void fill_info(const ShipDraw &a, ShipInfo &out) {
     snprintf(out.dest, sizeof(out.dest), "%s", a.dest);
     out.sogKt = a.sogKt; out.cogDeg = a.cogDeg; out.headingDeg = a.headingDeg;
     out.distNm = a.distNm; out.bearingDeg = a.bearingDeg;
+    out.lengthM = a.lengthM; out.beamM = a.beamM; out.draughtM = a.draughtM;
+    snprintf(out.eta, sizeof(out.eta), "%s", a.eta);
     out.alert = a.hasAlertFlag;
+    out.watched = (!s_watchMmsi.empty() && s_watchMmsi == a.mmsi);
 }
 
 void select(int idx) {

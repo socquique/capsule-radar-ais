@@ -83,10 +83,21 @@ static void refresh_card(void) {
     else                 snprintf(body, sizeof(body), "Dist: %.1f nm\nSOG: %.1f Knots", in.distNm, in.sogKt);
     lv_label_set_text(s_cardBody, body);
 
-    char sub[64];
-    if (in.dest[0]) snprintf(sub, sizeof(sub), "%s  " LV_SYMBOL_BULLET "  %s", in.type, in.dest);
-    else            snprintf(sub, sizeof(sub), "%s  " LV_SYMBOL_BULLET "  %s", in.type, in.status);
-    fold_ascii(sub);
+    // dim secondary line: type · size · draught · destination · ETA (omit unknowns).
+    // dest is folded separately; the rest is ASCII, so the bullet/arrow symbols survive.
+    char dest[24]; snprintf(dest, sizeof(dest), "%s", in.dest); fold_ascii(dest);
+    char sub[128];
+    int p = snprintf(sub, sizeof(sub), "%s", in.type[0] ? in.type : "Vessel");
+    if (in.lengthM > 0)
+        p += snprintf(sub + p, sizeof(sub) - p, "  " LV_SYMBOL_BULLET "  %ux%u m", in.lengthM, in.beamM);
+    if (!isnan(in.draughtM) && in.draughtM > 0.0f)
+        p += snprintf(sub + p, sizeof(sub) - p, "  " LV_SYMBOL_BULLET "  %.1f m draught", (double)in.draughtM);
+    if (dest[0] && strcmp(dest, "-") != 0)
+        p += snprintf(sub + p, sizeof(sub) - p, "  " LV_SYMBOL_BULLET "  " LV_SYMBOL_RIGHT " %s", dest);
+    else
+        p += snprintf(sub + p, sizeof(sub) - p, "  " LV_SYMBOL_BULLET "  %s", in.status);
+    if (in.eta[0])
+        snprintf(sub + p, sizeof(sub) - p, "  " LV_SYMBOL_BULLET "  ETA %s", in.eta);
     lv_label_set_text(s_cardSub, sub);
 }
 
@@ -317,8 +328,8 @@ static lv_obj_t *make_round_panel(lv_obj_t *parent) {
 static void build_card(void) {
     s_card = lv_obj_create(s_tileRadar);
     lv_obj_remove_style_all(s_card);
-    lv_obj_set_size(s_card, 250, 96);
-    lv_obj_align(s_card, LV_ALIGN_CENTER, 0, 86);
+    lv_obj_set_size(s_card, 272, 120);
+    lv_obj_align(s_card, LV_ALIGN_CENTER, 0, 78);
     lv_obj_set_style_bg_color(s_card, UI_PANEL, 0);
     lv_obj_set_style_bg_opa(s_card, 225, 0);
     lv_obj_set_style_radius(s_card, 14, 0);
@@ -340,10 +351,12 @@ static void build_card(void) {
     lv_obj_set_style_text_color(s_cardBody, UI_GREEN, 0);
     lv_obj_align(s_cardBody, LV_ALIGN_TOP_LEFT, 0, 26);
 
-    s_cardSub = lv_label_create(s_card);              // type / destination or status (dim)
+    s_cardSub = lv_label_create(s_card);              // type · size · draught · dest · ETA (dim, wraps)
     lv_obj_set_style_text_font(s_cardSub, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(s_cardSub, UI_DIM, 0);
-    lv_obj_align(s_cardSub, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_width(s_cardSub, 248);
+    lv_label_set_long_mode(s_cardSub, LV_LABEL_LONG_WRAP);
+    lv_obj_align(s_cardSub, LV_ALIGN_TOP_LEFT, 0, 70);
 }
 
 void ui_show_view(int idx) {
